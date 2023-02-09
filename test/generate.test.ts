@@ -122,7 +122,7 @@ describe('generate', ()=>{
 
     const spec = toSpec(ast);
     expect(spec).to.deep.equal({
-      variables: ['DataTable', 'steps'],
+      variables: ['test', 'DataTable', 'steps'],
       describes: [{
         name: 'Development', 
         tests: [{
