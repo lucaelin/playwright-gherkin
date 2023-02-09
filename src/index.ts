@@ -1,9 +1,9 @@
 import {readFile, writeFile} from 'node:fs/promises';
 import glob from 'glob';
-import {generateCode} from './generate';
+import {generateCode} from './generate.js';
 import {createHash} from 'node:crypto';
 
-export {DataTable} from './DataTable';
+export {DataTable} from './DataTable.js';
 
 export async function generateSpec(inputPath: string, outputPath: string) {
   const feature = await readFile(inputPath).then(res=>res.toString('utf8'));

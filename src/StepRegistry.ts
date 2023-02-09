@@ -1,5 +1,5 @@
 import { PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, TestInfo } from '@playwright/test';
-import { DataTable } from './DataTable';
+import { DataTable } from './DataTable.js';
 
 import {Dialect, dialects} from '@cucumber/gherkin';
 
