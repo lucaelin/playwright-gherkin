@@ -4,6 +4,7 @@ import {generateCode} from './generate.js';
 import {createHash} from 'node:crypto';
 
 export {DataTable} from './DataTable.js';
+export {StepRegistry} from './StepRegistry.js';
 
 export async function generateSpec(inputPath: string, outputPath: string) {
   const feature = await readFile(inputPath).then(res=>res.toString('utf8'));
@@ -20,7 +21,7 @@ export async function generateSpecs(inputGlob: string) {
   }
 }
 
-export async function validator(uri: string, hash: string) {
+export async function validate(uri: string, hash: string) {
   const fileHash = await readFile(uri).then(res=>createHash('sha256').update(res.toString('utf8')).digest('hex'));
   if (fileHash !== hash) throw new Error('Feature-spec out of sync')
 }
