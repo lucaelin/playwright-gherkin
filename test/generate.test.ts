@@ -32,7 +32,8 @@ type Step = {
 function toSteps(ast: ArrowFunctionExpression): Step[] {
   const steps = (ast.body as BlockStatement).body.map(expr=>{
     const stmt = check(expr, 'ExpressionStatement');
-    const callR = check(stmt?.expression, 'CallExpression');
+    const promise = check(stmt?.expression, 'AwaitExpression');
+    const callR = check(promise?.argument, 'CallExpression');
     const callL = check(callR?.callee, 'CallExpression');
     const callee = check(callL?.callee, 'MemberExpression');
 
@@ -122,7 +123,7 @@ describe('generate', ()=>{
 
     const spec = toSpec(ast);
     expect(spec).to.deep.equal({
-      variables: ['test', 'DataTable', 'steps'],
+      variables: ['test', 'DataTable', 'validate', 'steps'],
       describes: [{
         name: 'Development', 
         tests: [{

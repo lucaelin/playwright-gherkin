@@ -11,3 +11,4 @@ Generate Playwright test-runner code from gherkin files!
 - StepRegistry.from(other: StepRegistry)
 - sourcemaps
 - on-the-fly conversion
+- steps And

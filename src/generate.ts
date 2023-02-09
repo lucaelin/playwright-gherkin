@@ -30,7 +30,7 @@ function genStep(step: PickleStep): string[] {
   ]
 
   return [
-    `steps.find(${findArgs.join(', ')})`,
+    `await steps.find(${findArgs.join(', ')})`,
     `    (${testArgs.join(', ')});`
   ]
 }
