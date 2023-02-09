@@ -8,6 +8,9 @@
     "build": "tsc",
     "test": "mocha --loader=ts-node/esm test/**/*.test.ts"
   },
+  "bin": {
+    "playwright-gherkin": "./cli.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
