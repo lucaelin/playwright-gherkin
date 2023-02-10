@@ -12,3 +12,4 @@ Generate Playwright test-runner code from gherkin files!
 - sourcemaps
 - on-the-fly conversion
 - steps And
+- world

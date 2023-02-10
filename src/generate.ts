@@ -39,7 +39,7 @@ function genTest(pickle: Pickle): string[] {
   const steps = pickle.steps.flatMap(step => genStep(step));
   return [
     `test(${JSON.stringify(pickle.name)}, async ({${playwrightArgs.join(', ')}}, info)=>{`,
-      ...indent(steps),
+      ...indent([`test.setTimeout(${pickle.steps.length} * info.timeout);`, ...steps]),
     `})`,
   ]
 }
