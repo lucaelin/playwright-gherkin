@@ -9,9 +9,10 @@ type GherkinArgs = {docString: string, table: DataTable};
 
 type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: TestInfo) => Promise<void>;
 
-type StepType = 'Context' | 'Action' | 'Outcome';
+type StepType = 'Context' | 'Action' | 'Outcome' | 'Conjunction';
 
 export class StepRegistry {
+  private previouslyDefinedType?: string;
   private steps = {
     'Context': new Map<string, StepFunction>(), 
     'Action': new Map<string, StepFunction>(), 
@@ -25,6 +26,9 @@ export class StepRegistry {
   }
 
   private parse(text: string): {type: StepType, prefix: string, text: string} {
+    const andPrefix = this.dialect.and.find(prefix=>text.startsWith(prefix));
+    if (andPrefix) return {type: 'Conjunction', prefix: andPrefix, text: text.slice(andPrefix.length)};
+
     const givenPrefix = this.dialect.given.find(prefix=>text.startsWith(prefix));
     if (givenPrefix) return {type: 'Context', prefix: givenPrefix, text: text.slice(givenPrefix.length)};
 
@@ -44,7 +48,11 @@ export class StepRegistry {
   };
 
   define(statement: string, step: StepFunction) {
-    const {type, text} = this.parse(statement);
+    const {type: rawType, text} = this.parse(statement);
+    const type = rawType === 'Conjunction' ? this.previouslyDefinedType : rawType;
+    this.previouslyDefinedType = type;
+    if (!type) throw new Error('Cannot start a registry with a conjunction');
+    
     if (this.steps[type].has(text)) throw new Error('Step already exists');
     this.steps[type].set(text, step);
   };

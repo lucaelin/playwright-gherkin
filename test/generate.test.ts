@@ -111,7 +111,7 @@ function toSpec(ast: Program): Spec {
 }
 
 describe('generate', ()=>{
-  it('Simple Feature', ()=>{
+  it('generates the correct tests, steps and imports', ()=>{
     const out = generateCode('happy_path.feature', `
       Feature: Development
         Scenario: Testing
@@ -123,7 +123,7 @@ describe('generate', ()=>{
 
     const spec = toSpec(ast);
     expect(spec).to.deep.equal({
-      variables: ['test', 'DataTable', 'validate', 'steps'],
+      variables: ['test', 'DataTable', 'steps'],
       describes: [{
         name: 'Development', 
         tests: [{

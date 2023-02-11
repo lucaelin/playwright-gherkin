@@ -20,8 +20,3 @@ export async function generateSpecs(inputGlob: string) {
     await writeFile(inputPath+'.js', code);
   }
 }
-
-export async function validate(uri: string, hash: string) {
-  const fileHash = await readFile(uri).then(res=>createHash('sha256').update(res.toString('utf8')).digest('hex'));
-  if (fileHash !== hash) throw new Error('Feature-spec out of sync')
-}
