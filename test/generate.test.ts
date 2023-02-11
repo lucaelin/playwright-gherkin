@@ -142,4 +142,26 @@ describe('generate', ()=>{
       }]
     } as Spec)
   });
+  it('applies tags', ()=>{
+    const out = generateCode('happy_path.feature', `
+      @smoke @team-x
+      Feature: Development
+        @slow
+        Scenario: Testing
+          Then it works
+    `);
+    const ast = Parser.parse(out, {sourceType: 'module', ecmaVersion: 2020}) as unknown as Program;
+
+    const spec = toSpec(ast);
+    expect(spec.describes[0]).to.deep.equal({
+        name: 'Development @smoke @team-x', 
+        tests: [{
+          name: "Testing @smoke @team-x @slow",
+          steps: [{
+            name: "it works",
+            type: "Outcome",
+          },]
+        }]
+      } as Spec["describes"][0])
+  });
 }) 
