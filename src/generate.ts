@@ -23,7 +23,7 @@ function genStep(step: PickleStep): string[] {
   const docString = step.argument?.docString;
   const findArgs = parameterize(step.type as "Context" | "Action" | "Outcome", step.text);
   const testArgs: string[] = [
-    `{${playwrightArgs.join(', ')}, table: new DataTable(${JSON.stringify(rowMajor)}), docString: ${JSON.stringify(docString)}, wildcards: ${JSON.stringify(findArgs.values)}}`, 
+    `{${playwrightArgs.join(', ')}, table: new DataTable(${JSON.stringify(rowMajor)}), docString: ${JSON.stringify(docString)}, expressions: ${JSON.stringify(findArgs.values)}}`, 
     `info`
   ]
 

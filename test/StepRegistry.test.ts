@@ -58,19 +58,19 @@ describe('StepRegistry', ()=>{
     const steps = new StepRegistry();
     const stepfn = async () =>{}
 
-    steps.define('Given a "*"', stepfn)
+    steps.define('Given a "{}"', stepfn)
 
-    expect(steps.find({type: 'Context', originalText: 'a "something"', escapedText: 'a "*"'})).to.equal(stepfn);
+    expect(steps.find({type: 'Context', originalText: 'a "something"', escapedText: 'a "{}"'})).to.equal(stepfn);
   });
   it('prefer steps without parameters', ()=>{
     const steps = new StepRegistry();
     const stepfn1 = async () =>{}
     const stepfn2 = async () =>{}
 
-    steps.define('Given a "*"', stepfn1)
+    steps.define('Given a "{}"', stepfn1)
     steps.define('Given a "something"', stepfn2)
 
-    expect(steps.find({type: 'Context', originalText: 'a "something"', escapedText: 'a "*"'})).to.equal(stepfn2);
+    expect(steps.find({type: 'Context', originalText: 'a "something"', escapedText: 'a "{}"'})).to.equal(stepfn2);
   });
 
   it('throws if a step cannot be found', () => {

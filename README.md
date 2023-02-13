@@ -6,6 +6,7 @@ Generate Playwright test-runner code from gherkin files!
 
 - DECISION: single test + multiple functions / single serial discribe + multiple
   tests
+- full cucumber experession support
 - RegEx steps
 - migrate Step tests here
 - stepRegistry.import(other: StepRegistry)

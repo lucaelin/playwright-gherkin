@@ -6,7 +6,7 @@ import { PickleStepType } from '@cucumber/messages';
 
 
 type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
-type GherkinArgs = {docString: string, table: DataTable};
+type GherkinArgs = {docString: string, table: DataTable, expressions: string[]};
 
 type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: TestInfo) => Promise<void>;
 type ParameterizedStep = {type: StepType, originalText: string, escapedText?: string, values?: string[]}
@@ -30,11 +30,11 @@ export function parse(text: string, dialect: Dialect): {type: StepType, prefix: 
   throw new Error('Unable to parse: '+text);
 }
 
-export function parameterize(type: StepType, originalText: string): ParameterizedStep {
+export function parameterize(type: StepType, originalText: string): Required<ParameterizedStep> {
   const matchQuoted = /("([^"]+)"|'([^']+)')/g;
   const values = [...originalText.matchAll(matchQuoted)].map(([,,groupDouble,groupSingle])=>groupDouble??groupSingle);
 
-  const escapedText = values.reduce((p,c)=>p.replace(c, '*'), originalText);
+  const escapedText = values.reduce((p,c)=>p.replace(c, '{}'), originalText);
   return {type, originalText, escapedText, values};
 }
 
