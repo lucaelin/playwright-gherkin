@@ -1,6 +1,7 @@
 import Gherkin from '@cucumber/gherkin';
 import {GherkinDocument, IdGenerator, Pickle, PickleStep} from '@cucumber/messages';  
 import { PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions } from '@playwright/test';
+import { parameterize } from './StepRegistry.js';
 
 const uuidFn = IdGenerator.uuid();
 const builder = new Gherkin.AstBuilder(uuidFn);
@@ -20,17 +21,14 @@ const playwrightArgs = ['page', 'browser', 'context', 'request'] satisfies reado
 function genStep(step: PickleStep): string[] {
   const rowMajor = step.argument?.dataTable?.rows.map(row=>row.cells.map(cell=>cell.value));
   const docString = step.argument?.docString;
-  const findArgs: string[] = [
-    JSON.stringify(step.type) ?? 'undefined', 
-    JSON.stringify(step.text)
-  ];
+  const findArgs = parameterize(step.type as "Context" | "Action" | "Outcome", step.text);
   const testArgs: string[] = [
-    `{${playwrightArgs.join(', ')}, table: new DataTable(${JSON.stringify(rowMajor)}), docString: ${JSON.stringify(docString)}}`, 
+    `{${playwrightArgs.join(', ')}, table: new DataTable(${JSON.stringify(rowMajor)}), docString: ${JSON.stringify(docString)}, wildcards: ${JSON.stringify(findArgs.values)}}`, 
     `info`
   ]
 
   return [
-    `await steps.find(${findArgs.join(', ')})`,
+    `await steps.find(${JSON.stringify(findArgs)})`,
     `    (${testArgs.join(', ')});`
   ]
 }

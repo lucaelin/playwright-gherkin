@@ -2,13 +2,15 @@ import { PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, Playwr
 import { DataTable } from './DataTable.js';
 
 import {Dialect, dialects} from '@cucumber/gherkin';
+import { PickleStepType } from '@cucumber/messages';
 
 
 type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
 type GherkinArgs = {docString: string, table: DataTable};
 
 type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: TestInfo) => Promise<void>;
-type ParameterizedStep = {originalText: string, escapedText: string, values: string[]}
+type ParameterizedStep = {type: StepType, originalText: string, escapedText?: string, values?: string[]}
+
 
 type StepType = 'Context' | 'Action' | 'Outcome' | 'Conjunction';
 
@@ -28,12 +30,12 @@ export function parse(text: string, dialect: Dialect): {type: StepType, prefix: 
   throw new Error('Unable to parse: '+text);
 }
 
-export function parameterize(originalText: string): ParameterizedStep {
+export function parameterize(type: StepType, originalText: string): ParameterizedStep {
   const matchQuoted = /("([^"]+)"|'([^']+)')/g;
   const values = [...originalText.matchAll(matchQuoted)].map(([,,groupDouble,groupSingle])=>groupDouble??groupSingle);
 
   const escapedText = values.reduce((p,c)=>p.replace(c, '*'), originalText);
-  return {originalText, escapedText, values};
+  return {type, originalText, escapedText, values};
 }
 
 export class StepRegistry {
@@ -51,12 +53,11 @@ export class StepRegistry {
     this.dialect = dialects[dialect];
   }
 
-  find(type: StepType, text: string): StepFunction {
+  find({type, escapedText, originalText, values}: ParameterizedStep): StepFunction {
     const steps = this.steps[type];
-    const params = parameterize(text);
-    if (steps.has(params.originalText)) return steps.get(params.originalText)!;
-    if (steps.has(params.escapedText)) return steps.get(params.escapedText)!;
-    throw new Error('Unable to find "'+type+'": '+text)
+    if (steps.has(originalText)) return steps.get(originalText)!;
+    if (escapedText && steps.has(escapedText)) return steps.get(escapedText)!;
+    throw new Error('Unable to find "'+type+'": '+originalText)
   };
 
   define(statement: string, step: StepFunction) {

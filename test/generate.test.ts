@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {generateCode} from '../src/generate.js';
 import {Parser} from 'acorn';
-import {ArrowFunctionExpression, BlockStatement, ImportDeclaration, Literal, ModuleDeclaration, Program, Node} from 'estree';
+import {ArrowFunctionExpression, BlockStatement, ImportDeclaration, Literal, ModuleDeclaration, Program, Node, Property} from 'estree';
 
 function nonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && value !== undefined;
@@ -36,18 +36,18 @@ function toSteps(ast: ArrowFunctionExpression): Step[] {
     const callR = check(promise?.argument, 'CallExpression');
     const callL = check(callR?.callee, 'CallExpression');
     const callee = check(callL?.callee, 'MemberExpression');
-
+    
     const object = check(callee?.object, 'Identifier');
-
+    const findParam = check(callL?.arguments[0], 'ObjectExpression');
+    
+    if (!findParam) return undefined; 
     if (object?.name !== 'steps') return undefined; 
-    const arg0 = check(callL?.arguments[0], 'Literal');
-    const arg1 = check(callL?.arguments[1], 'Literal');
-
-    if (!arg0 || !arg1) return undefined;
+    const findProperties = findParam.properties.map(prop=>check(prop, 'Property')).filter(nonNullable);
+    const findPropertiesEntries = findProperties.map(prop=>[check(prop.key, 'Literal')?.value, check(prop.value, 'Literal')?.value]);
   
     return {
-      type: arg0.value as string,
-      name: arg1.value as string,
+      type: findPropertiesEntries.find(([key])=>key === 'type')?.[1] as string ?? 'Unknown',
+      name: findPropertiesEntries.find(([key])=>key === 'originalText')?.[1] as string ?? 'Unknown',
     }
   }).filter(nonNullable)
 
