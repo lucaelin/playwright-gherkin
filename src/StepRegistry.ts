@@ -3,42 +3,18 @@ import { DataTable } from './DataTable.js';
 
 import {Dialect, dialects} from '@cucumber/gherkin';
 import { PickleStepType } from '@cucumber/messages';
+import { ParsedStep, parseStep } from './parse.js';
 
 
-type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
-type GherkinArgs = {docString: string, table: DataTable, expressions: string[]};
+export type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
+export type GherkinArgs = {docString: string, table: DataTable, expressions: string[], world: Record<string, any>};
+export type PlaywrightTestInfo = TestInfo;
 
-type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: TestInfo) => Promise<void>;
-type ParameterizedStep = {type: StepType, originalText: string, escapedText?: string, values?: string[]}
+export type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: PlaywrightTestInfo) => Promise<void>;
 
 
-type StepType = 'Context' | 'Action' | 'Outcome' | 'Conjunction';
 
-export function parse(text: string, dialect: Dialect): {type: StepType, prefix: string, text: string} {
-  const andPrefix = dialect.and.find(prefix=>text.startsWith(prefix));
-  if (andPrefix) return {type: 'Conjunction', prefix: andPrefix, text: text.slice(andPrefix.length)};
-
-  const givenPrefix = dialect.given.find(prefix=>text.startsWith(prefix));
-  if (givenPrefix) return {type: 'Context', prefix: givenPrefix, text: text.slice(givenPrefix.length)};
-
-  const whenPrefix = dialect.when.find(prefix=>text.startsWith(prefix));
-  if (whenPrefix) return {type: 'Action', prefix: whenPrefix, text: text.slice(whenPrefix.length)};
-
-  const thenPrefix = dialect.then.find(prefix=>text.startsWith(prefix));
-  if (thenPrefix) return {type: 'Outcome', prefix: thenPrefix, text: text.slice(thenPrefix.length)};
-
-  throw new Error('Unable to parse: '+text);
-}
-
-export function parameterize(type: StepType, originalText: string): Required<ParameterizedStep> {
-  const matchQuoted = /("([^"]+)"|'([^']+)')/g;
-  const values = [...originalText.matchAll(matchQuoted)].map(([,,groupDouble,groupSingle])=>groupDouble??groupSingle);
-
-  const escapedText = values.reduce((p,c)=>p.replace(c, '{}'), originalText);
-  return {type, originalText, escapedText, values};
-}
-
-export class StepRegistry {
+export class StepRegistry<StepList extends string[] = string[]> {
   private previouslyDefinedType?: string;
   private steps = {
     'Context': new Map<string, StepFunction>(), 
@@ -53,15 +29,15 @@ export class StepRegistry {
     this.dialect = dialects[dialect];
   }
 
-  find({type, escapedText, originalText, values}: ParameterizedStep): StepFunction {
+  find({type, keyword, expressionText, text}: ParsedStep): StepFunction {
     const steps = this.steps[type];
-    if (steps.has(originalText)) return steps.get(originalText)!;
-    if (escapedText && steps.has(escapedText)) return steps.get(escapedText)!;
-    throw new Error('Unable to find "'+type+'": '+originalText)
+    if (steps.has(text)) return steps.get(text)!;
+    if (expressionText && steps.has(expressionText)) return steps.get(expressionText)!;
+    throw new Error(`Unable to find step: ${keyword} ${text}`);
   };
 
-  define(statement: string, step: StepFunction) {
-    const {type: rawType, text} = parse(statement, this.dialect);
+  define(statement: StepList[number], step: StepFunction) {
+    const {type: rawType, text} = parseStep(statement, this.dialect);
     const type = rawType === 'Conjunction' ? this.previouslyDefinedType : rawType;
     this.previouslyDefinedType = type;
     if (!type) throw new Error('Cannot start a registry with a conjunction');

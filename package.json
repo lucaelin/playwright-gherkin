@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "mocha --loader=ts-node/esm test/**/*.test.ts"
+    "test": "mocha --loader=ts-node/esm test/**/*.test.ts",
+    "test:file": "mocha --loader=ts-node/esm"
   },
   "bin": {
     "playwright-gherkin": "./cli.js"

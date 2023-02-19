@@ -1,9 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "include": [
-    "./"
+    "./**/*.ts"
   ],
   "compilerOptions": {
-    "types": ["mocha", "node"],                                 /* Type declaration files to be included in compilation. */
+    "types": ["mocha", "node"],      
+    "rootDir": "../"                           /* Type declaration files to be included in compilation. */
   }
 }

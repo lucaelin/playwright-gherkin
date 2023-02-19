@@ -1,167 +1,69 @@
 import {expect} from 'chai';
+import {Spec, Feature, Scenario} from '../src/parse.js';
 import {generateCode} from '../src/generate.js';
-import {Parser} from 'acorn';
-import {ArrowFunctionExpression, BlockStatement, ImportDeclaration, Literal, ModuleDeclaration, Program, Node, Property} from 'estree';
+import { simulate } from './simulate.js';
 
-function nonNullable<T>(value: T): value is NonNullable<T> {
-  return value !== null && value !== undefined;
-}
+type DeepPartial<T> = T extends object ? {
+  [key in keyof T]?: DeepPartial<T[key]>;
+} : T;
 
-function check<T extends Node['type']>(value: unknown, type: T): Node & {type: T} | undefined {
-  if (typeof value === 'object' && (value as {type?: unknown})?.type === type) return value as any;
-  return undefined;
-}
-
-type Spec = {
-  variables: string[];
-  describes: Describe[];
-}
-type Describe = {
-  name: string;
-  tests: Test[];
-}
-type Test = {
-  name: string;
-  steps: Step[];
-}
-type Step = {
-  type: string,
-  name: string,
-}
-
-function toSteps(ast: ArrowFunctionExpression): Step[] {
-  const steps = (ast.body as BlockStatement).body.map(expr=>{
-    const stmt = check(expr, 'ExpressionStatement');
-    const promise = check(stmt?.expression, 'AwaitExpression');
-    const callR = check(promise?.argument, 'CallExpression');
-    const callL = check(callR?.callee, 'CallExpression');
-    const callee = check(callL?.callee, 'MemberExpression');
-    
-    const object = check(callee?.object, 'Identifier');
-    const findParam = check(callL?.arguments[0], 'ObjectExpression');
-    
-    if (!findParam) return undefined; 
-    if (object?.name !== 'steps') return undefined; 
-    const findProperties = findParam.properties.map(prop=>check(prop, 'Property')).filter(nonNullable);
-    const findPropertiesEntries = findProperties.map(prop=>[check(prop.key, 'Literal')?.value, check(prop.value, 'Literal')?.value]);
-  
-    return {
-      type: findPropertiesEntries.find(([key])=>key === 'type')?.[1] as string ?? 'Unknown',
-      name: findPropertiesEntries.find(([key])=>key === 'originalText')?.[1] as string ?? 'Unknown',
-    }
-  }).filter(nonNullable)
-
-  return steps
-}
-
-function toTests(ast: ArrowFunctionExpression): Test[] {
-  const tests = (ast.body as BlockStatement).body.map(expr=>{
-    const stmt = check(expr, 'ExpressionStatement');
-    const call = check(stmt?.expression, 'CallExpression');
-    const callee = check(call?.callee, 'Identifier');
-
-    if (callee?.name !== 'test') return undefined;
-    const arg0 = check(call?.arguments[0], 'Literal');
-    const arg1 = check(call?.arguments[1], 'ArrowFunctionExpression');
-
-    if (!arg0 || !arg1) return undefined;
-  
-    return {
-      name: arg0.value as string,
-      steps: toSteps(arg1),
-    }
-  }).filter(nonNullable)
-
-  return tests
-}
-
-function toSpec(ast: Program): Spec {
-  const importDeclarations = (ast.body as ModuleDeclaration[]).filter(n=>n.type==='ImportDeclaration') as ImportDeclaration[];
-  const imports = importDeclarations.flatMap(n=>n?.specifiers.map(spec=>spec.local.name));
-  
-  expect(imports).to.contain('DataTable');
-
-  const describes = ast.body
-    .map(expr=>{
-      const stmt = check(expr, 'ExpressionStatement');
-      const call = check(stmt?.expression, 'CallExpression');
-      const callee = check(call?.callee, 'MemberExpression');
-      const object = check(callee?.object, 'Identifier');
-      const prop = check(callee?.property, 'Identifier');
-
-      if (object?.name !== 'test') return undefined; 
-      if (prop?.name !== 'describe') return undefined;
-      
-      const args = call?.arguments;
-      const arg0 = check(args?.[0], 'Literal');
-      const arg1 = check(args?.[1], 'ArrowFunctionExpression');
-
-      if (!arg0 || !arg1) return undefined;
-      
-      return {
-        name: arg0.value!.toString(),
-        tests: toTests(arg1),
-      };
-    }).filter(nonNullable)
-
+function defaultSpec(spec: DeepPartial<Spec>): Spec {
   return {
-    variables: [...imports],
-    describes: describes
-  }
+    uri: '',
+    language: 'en',
+    comments: [],
+    ...spec,
+    features: spec?.features?.map((feat)=>({
+      name: 'Feature 1',
+      language: 'en',
+      keyword: 'Feature',
+      description: '',
+      tags: [],
+      location: {line: 0, column: 0},
+      ...feat,
+      scenarios: feat?.scenarios?.map((scn)=>({
+        name: 'Scenario 1',
+        tags: [],
+        location: {line: 0, column: 0},
+        ...scn,
+        steps: scn?.steps?.map((step)=>({
+          text: 'Step 1',
+          location: {},
+          keyword: '',
+          originalKeyword: '',
+          originalText: '',
+          expressionText: '',
+          type: 'Unknown',
+          ...step,
+        }))
+      }))
+    }))
+  } as Spec;
 }
 
 describe('generate', ()=>{
-  it('generates the correct tests, steps and imports', ()=>{
-    const out = generateCode('happy_path.feature', `
-      Feature: Development
-        Scenario: Testing
-          Given good software
-          When you test it
-          Then it works
-    `);
-    const ast = Parser.parse(out, {sourceType: 'module', ecmaVersion: 2020}) as unknown as Program;
-
-    const spec = toSpec(ast);
-    expect(spec).to.deep.equal({
-      variables: ['test', 'DataTable', 'steps'],
-      describes: [{
-        name: 'Development', 
-        tests: [{
-          name: "Testing",
+  it('generates a valid spec', async ()=>{
+    const spec = defaultSpec({
+      features: [{
+        scenarios: [{
+          name: 'Scenario 1',
           steps: [{
-            name: "good software",
-            type: "Context",
-          },{
-            name: "you test it",
-            type: "Action",
-          },{
-            name: "it works",
-            type: "Outcome",
-          },]
+            text: 'Step 1',
+          }]
         }]
       }]
-    } as Spec)
-  });
-  it('applies tags', ()=>{
-    const out = generateCode('happy_path.feature', `
-      @smoke @team-x
-      Feature: Development
-        @slow
-        Scenario: Testing
-          Then it works
-    `);
-    const ast = Parser.parse(out, {sourceType: 'module', ecmaVersion: 2020}) as unknown as Program;
+    }) as Spec; 
 
-    const spec = toSpec(ast);
-    expect(spec.describes[0]).to.deep.equal({
-        name: 'Development @smoke @team-x', 
-        tests: [{
-          name: "Testing @smoke @team-x @slow",
-          steps: [{
-            name: "it works",
-            type: "Outcome",
-          },]
-        }]
-      } as Spec["describes"][0])
+    const code = generateCode(spec);
+    const trace = await simulate(code);
+    expect(trace[0].call).to.equal('test.describe');
+    expect(trace[0].name).to.equal('Feature 1');
+    expect(trace[1].call).to.equal('test');
+    expect(trace[1].name).to.equal('Scenario 1');
+    expect(trace[2].call).to.equal('steps.find');
+    expect(trace[2].step.text).to.equal('Step 1');
+    expect(trace[2].step.keyword).to.equal('');
+    expect(trace[3].call).to.equal('steps.find.call');
+    expect(trace[3].pw.world).to.deep.equal({});
   });
 }) 
