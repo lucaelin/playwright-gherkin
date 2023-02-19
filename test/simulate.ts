@@ -15,9 +15,13 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
   }
   MockedDescribe.configure = MockedConfigure
   
+  async function MockedTimeout(timeout) {
+    callhistory.push({call: 'test.setTimeout', timeout});
+  };
+  MockedTest.setTimeout = MockedTimeout;
   async function MockedTest(name, fn) {
     callhistory.push({call: 'test', name, fn});
-    callhistory.at(-1)!.ret = fn({}, {});
+    callhistory.at(-1)!.ret = fn({}, {timeout: 100});
   }
   MockedTest.describe = MockedDescribe;
   
