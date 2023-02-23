@@ -13,8 +13,8 @@ function genStep(step: Step): string[] {
         `const expressions = ${JSON.stringify(step.expressions)}`,
         `const arg1 = {${playwrightArgs.join(', ')}, table, docString, expressions, world};`,
         `const step = await steps.find(${JSON.stringify(step)});`,
-        `const timeout = new Promise((_, rej)=>setTimeout(()=>rej('Step timeout reached after '+info.timeout+'ms'), info.timeout));`,
-        `await Promise.race([step(arg1, info), timeout]);`,
+        `const timeout = info.timeout ? new Promise((_, rej)=>setTimeout(()=>rej('Step timeout reached after '+info.timeout+'ms'), info.timeout)) : undefined;`,
+        `await Promise.race([step(arg1, info), timeout].filter(p=>p));`,
       ]),
     `}`,
   ]

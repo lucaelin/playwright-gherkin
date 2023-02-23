@@ -65,7 +65,9 @@ describe('generate', ()=>{
     expect(trace[3].call).to.equal('steps.find');
     expect(trace[3].step.text).to.equal('Step 1');
     expect(trace[3].step.keyword).to.equal('');
-    expect(trace[4].call).to.equal('steps.find.call');
-    expect(trace[4].pw.world).to.deep.equal({});
+    expect(trace[4].call).to.equal('setTimeout');
+    expect(trace[4].timeout).to.equal(100);
+    expect(trace[5].call).to.equal('steps.find.call');
+    expect(trace[5].pw.world).to.deep.equal({});
   });
 }) 

@@ -41,6 +41,10 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
       callhistory.push({call: 'DataTable', table});
     }
   }
+  function MockedSetTimeout(fn, timeout) {
+    callhistory.push({call: 'setTimeout', fn, timeout});
+    return setTimeout(fn, timeout);
+  }
   
 
   const testCode = code.split('\n').filter(l=>!l.startsWith('import ')).join('\n');
@@ -48,6 +52,7 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
     test: MockedTest,
     steps: new MockedRegistry(),
     DataTable: MockedDataTable,
+    setTimeout: MockedSetTimeout,
     ...implementations,
   };
 
