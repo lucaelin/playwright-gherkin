@@ -7,6 +7,7 @@ describe('parse', ()=>{
 
     expect(spec).to.deep.equal({
       uri: 'happy_path.feature', 
+      content: '',
       features: [],
       comments: [],
       language: 'en'
@@ -135,6 +136,7 @@ describe('parse', ()=>{
 
     expect(spec).to.deep.equal({
       uri: "happy_path.feature",
+      content: spec.content,
       comments: [],
       language: "en",
       features: [

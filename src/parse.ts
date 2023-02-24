@@ -28,6 +28,7 @@ type Location = {
 
 export type Spec = {
   uri: string,
+  content: string,
   language: string,
   comments: string[],
   features: Feature[],
@@ -67,6 +68,7 @@ export function parseFeature(uri: string, feature: string): Spec {
   
   return {
     uri,
+    content: feature,
     comments: document.comments.map(c=>c.text),
     language: document.feature?.language ?? 'en',
     features: document.feature ? [{
