@@ -11,7 +11,7 @@ type Code = (string|LocationMarker|Code)[]
 
 function genStep(step: Step): Code {
   return [
-    {line: step.location.line || 1, step: step.originalText},
+    {line: step.location?.line || 1, step: step.originalText},
     `{ // ${JSON.stringify(step.originalText)}`,
     [
       `const table = ${step.table?`new DataTable(${JSON.stringify(step.table)})`:'undefined'};`,
@@ -30,7 +30,7 @@ function genStep(step: Step): Code {
 function genScenario(scn: Scenario): Code {
   const tests = scn.steps.flatMap(step=>genStep(step));
   return [
-    {line: scn.location.line || 1, step: scn.name},
+    {line: scn.location?.line || 1, step: scn.name},
     `test(${JSON.stringify(`${scn.name} ${scn.tags.join(' ')}`.trim())}, async ({${playwrightArgs.join(', ')}}, info)=>{`,
     [
         `test.setTimeout(${scn.steps.length} * info.timeout);`,
@@ -50,7 +50,7 @@ function genFeature(spec: Spec): Code {
     `import {steps} from './steps.js';`,
     //`validate(${JSON.stringify(uri)}, ${JSON.stringify(hash)})`,
     ``,
-    {line: spec.features[0].location.line || 1, step: spec.features[0].name},
+    {line: spec.features[0].location?.line || 1, step: spec.features[0].name},
     `test.describe(${JSON.stringify(`${spec.features[0].name} ${spec.features[0].tags.join(' ')}`.trim())}, ()=>{`,
     ...describes,
     `})`,

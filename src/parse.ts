@@ -39,17 +39,17 @@ export type Feature = {
   language: string,
   tags: string[],
   description: string,
-  location: Location,
+  location?: Location,
   scenarios: Scenario[],
 };
 export type Scenario = {
   name: string,
   tags: string[],
-  location: Location,
+  location?: Location,
   steps: Step[],
 };
 export type Step = {
-  location: Location,
+  location?: Location,
   type: StepType,
   text: string,
   keyword: string,
@@ -90,7 +90,7 @@ export function parseFeature(uri: string, feature: string): Spec {
 
           steps: pickle.steps.map(step=>{
             const astNode = document.feature?.children
-              .flatMap(c=>c.scenario?.steps)
+              .flatMap(c=>[...c.background?.steps ?? [], ...c.scenario?.steps ?? []])
               .find(s=>step.astNodeIds.includes(s?.id??''))
             const originalKeyword = astNode?.keyword.trim() ?? '';
             const keyword = stepTypeToDialectKey(step.type ?? 'Unknown', dialect);
