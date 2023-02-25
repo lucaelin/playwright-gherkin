@@ -83,8 +83,12 @@ export function parseFeature(uri: string, feature: string): Spec {
           .map(child=>child.scenario)
           .find(scn=>pickle.astNodeIds.includes(scn?.id ?? ''));
 
+        const scenariosWithSameName = pickles.filter(p=>p.name === pickle.name);
+        const scenarioIndex = scenariosWithSameName.indexOf(pickle);
+        const outlineSuffix = scenariosWithSameName.length > 1 ? ` (Example ${scenarioIndex + 1})` : '';
+
         return {
-          name: pickle.name, 
+          name: pickle.name + outlineSuffix, 
           tags: pickle.tags.map(t=>t.name),
           location: astNode?.location,
 

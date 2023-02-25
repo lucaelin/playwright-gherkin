@@ -124,6 +124,34 @@ describe('parse', ()=>{
     ]);
   });
 
+  it('generates unique names for scenario outlines', ()=>{
+    const spec = parseFeature('happy_path.feature', `
+      Feature: Development
+        Scenario Outline: Outline with examples
+          Then it <state>
+          Examples:
+            | state  |
+            | works  |
+            | breaks |
+    `);
+
+    expect(spec.features[0].scenarios).to.have.lengthOf(2);
+    expect(spec.features[0].scenarios[0].name).to.not.equal(spec.features[0].scenarios[1].name)
+  });
+
+  it('finds background ast-nodes', ()=>{
+    const spec = parseFeature('happy_path.feature', `
+      Feature: Development
+        Background: 
+          Given you have a clean background
+        Scenario: Testing
+          Then you pass
+    `);
+
+    expect(spec.features[0].scenarios[0].steps).to.have.lengthOf(2);
+    expect(spec.features[0].scenarios[0].steps[0].text).to.equal('you have a clean background');
+    expect(spec.features[0].scenarios[0].steps[0].location).to.deep.equal({column: 11, line: 4});
+  });
 
   it('generates a complete spec structure', ()=>{
     const spec = parseFeature('happy_path.feature', `

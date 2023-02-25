@@ -17,7 +17,7 @@
   "dependencies": {
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
-    "@playwright/test": "^1.30.0",
+    "@playwright/test": "^1.31.1",
     "glob": "^8.1.0"
   },
   "devDependencies": {
