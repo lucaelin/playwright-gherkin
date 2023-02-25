@@ -78,7 +78,7 @@ describe('parse', ()=>{
         originalKeyword: 'Given',
         originalText: "Given a first step",
         table: undefined,
-        text: "a first step",
+        text: "Given a first step",
         type: "Context",
     });
   });
@@ -151,7 +151,7 @@ describe('parse', ()=>{
     `);
 
     expect(spec.features[0].scenarios[0].steps).to.have.lengthOf(2);
-    expect(spec.features[0].scenarios[0].steps[0].text).to.equal('you have a clean background');
+    expect(spec.features[0].scenarios[0].steps[0].text).to.equal('Given you have a clean background');
     expect(spec.features[0].scenarios[0].steps[0].location).to.deep.equal({column: 11, line: 4});
   });
 
@@ -195,7 +195,7 @@ describe('parse', ()=>{
                     column: 11
                   },
                   type: "Context",
-                  text: "good software",
+                  text: "Given good software",
                   keyword: 'Given',
                   originalKeyword: 'Given',
                   originalText: "Given good software",
@@ -210,7 +210,7 @@ describe('parse', ()=>{
                     column: 11
                   },
                   type: "Action",
-                  text: "you test it",
+                  text: "When you test it",
                   keyword: 'When',
                   originalKeyword: 'When',
                   originalText: "When you test it",
@@ -225,7 +225,7 @@ describe('parse', ()=>{
                     column: 11
                   },
                   type: "Outcome",
-                  text: "it works",
+                  text: "Then it works",
                   keyword: 'Then',
                   originalKeyword: 'Then',
                   originalText: "Then it works",

@@ -98,13 +98,13 @@ export function parseFeature(uri: string, feature: string): Spec {
               .find(s=>step.astNodeIds.includes(s?.id??''))
             const originalKeyword = astNode?.keyword.trim() ?? '';
             const keyword = stepTypeToDialectKey(step.type ?? 'Unknown', dialect);
-            const originalText = `${keyword} ${astNode?.text.trim()}`;
+            const originalText = `${originalKeyword} ${astNode?.text.trim()}`;
             const {expressionText, expressions} = parameterize({type: step.type ?? 'Unknown', text: step.text, keyword});
 
             return {
               location: astNode?.location,
               type: step.type ?? 'Unknown',
-              text: step.text,
+              text: keyword + ' ' + step.text,
               keyword,
               originalKeyword,
               originalText,

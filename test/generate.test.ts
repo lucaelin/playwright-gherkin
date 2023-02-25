@@ -3,45 +3,7 @@ import {Spec, Feature, Scenario} from '../src/parse.js';
 import {generateCode} from '../src/generate.js';
 import { simulate } from './simulate.js';
 import { SourceMapConsumer } from 'source-map';
-
-type DeepPartial<T> = T extends object ? {
-  [key in keyof T]?: DeepPartial<T[key]>;
-} : T;
-
-function defaultSpec(spec: DeepPartial<Spec>): Spec {
-  return {
-    uri: 'test.feature',
-    content: '',
-    language: 'en',
-    comments: [],
-    ...spec,
-    features: spec?.features?.map((feat)=>({
-      name: 'Feature 1',
-      language: 'en',
-      keyword: 'Feature',
-      description: '',
-      tags: [],
-      location: {line: 1, column: 0},
-      ...feat,
-      scenarios: feat?.scenarios?.map((scn)=>({
-        name: 'Scenario 1',
-        tags: [],
-        location: {line: 1, column: 0},
-        ...scn,
-        steps: scn?.steps?.map((step)=>({
-          text: 'Step 1',
-          location: {},
-          keyword: '',
-          originalKeyword: '',
-          originalText: '',
-          expressionText: '',
-          type: 'Unknown',
-          ...step,
-        }))
-      }))
-    }))
-  } as Spec;
-}
+import { defaultSpec } from './util.js';
 
 describe('generate', ()=>{
   it('generates a valid spec', async ()=>{
@@ -50,7 +12,7 @@ describe('generate', ()=>{
         scenarios: [{
           name: 'Scenario 1',
           steps: [{
-            text: 'Step 1',
+            text: 'Then step once',
           }]
         }]
       }]
@@ -65,8 +27,8 @@ describe('generate', ()=>{
     expect(trace[2].call).to.equal('test.setTimeout');
     expect(trace[2].timeout).to.equal(100);
     expect(trace[3].call).to.equal('steps.find');
-    expect(trace[3].step.text).to.equal('Step 1');
-    expect(trace[3].step.keyword).to.equal('');
+    expect(trace[3].step.text).to.equal('Then step once');
+    expect(trace[3].step.keyword).to.equal('Then');
     expect(trace[4].call).to.equal('setTimeout');
     expect(trace[4].timeout).to.equal(100);
     expect(trace[5].call).to.equal('steps.find.call');
