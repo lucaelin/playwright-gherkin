@@ -76,10 +76,11 @@ export function generateCode(spec: Spec) {
     })
   }
 
-  
-  return lines.join('\n')
-    +'\n\n'
-    +'//# sourceMappingURL=data:application/json;charset=utf-8;base64,'+btoa(sourcemap.toString());
+  // TODO check this code when https://github.com/microsoft/playwright/issues/21204 is closed or fixed
+  return lines.join('\n');
+  //return lines.join('\n')
+  //  +'\n\n'
+  //  +'//# sourceMappingURL=data:application/json;charset=utf-8;base64,'+btoa(sourcemap.toString());
 }
 
 function flattenBlock(

@@ -73,7 +73,8 @@ describe('generate', ()=>{
     expect(trace[5].pw.world).to.deep.equal({});
   });
   
-  it('generates a valid sourcemap', async ()=>{
+  // TODO check this code when https://github.com/microsoft/playwright/issues/21204 is closed or fixed
+  it.skip('generates a valid sourcemap', async ()=>{
     const spec = defaultSpec({
       content: `
         Feature: a
