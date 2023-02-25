@@ -137,6 +137,8 @@ describe('parse', ()=>{
 
     expect(spec.features[0].scenarios).to.have.lengthOf(2);
     expect(spec.features[0].scenarios[0].name).to.not.equal(spec.features[0].scenarios[1].name)
+    expect(spec.features[0].scenarios[0].steps[0].text).to.contain('works');
+    expect(spec.features[0].scenarios[1].steps[0].text).to.contain('breaks');
   });
 
   it('finds background ast-nodes', ()=>{
