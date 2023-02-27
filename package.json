@@ -1,9 +1,14 @@
 {
   "name": "playwright-gherkin",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.1",
+  "description": "Generate Playwright test-runner code from gherkin files!",
   "main": "lib/index.js",
   "type": "module",
+  "homepage": "https://github.com/lucaelin/playwright-gherkin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucaelin/playwright-gherkin.git"
+  },
   "scripts": {
     "build": "tsc",
     "test": "mocha --loader=ts-node/esm test/**/*.test.ts",
@@ -12,8 +17,14 @@
   "bin": {
     "playwright-gherkin": "./cli.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Luca Elin Haneklau",
+  "license": "MIT",
+  "keywords": [
+    "gherkin",
+    "playwright",
+    "cucumber",
+    "library"
+  ],
   "dependencies": {
     "@cucumber/gherkin": "^26.0.3",
     "@cucumber/messages": "^21.0.1",
