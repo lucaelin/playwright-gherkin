@@ -16,11 +16,11 @@ function genStep(step: Step): CodeBlock {
     [
       `const table = ${step.table?`new DataTable(${JSON.stringify(step.table)})`:'undefined'};`,
       `const docString = ${JSON.stringify(step.docString)};`,
-      `const step = ${JSON.stringify(step)}`,
-      `const arg1 = {${playwrightArgs.join(', ')}, table, docString, step, world};`,
-      `const stepCall = await steps.find(step);`,
+      `const step = ${JSON.stringify(step)};`,
+      `const {call, parameters} = steps.find(step);`,
+      `const arg1 = {${playwrightArgs.join(', ')}, table, docString, step, world, parameters};`,
       `const timeout = info.timeout ? new Promise((_, rej)=>setTimeout(()=>rej(new Error('Step timeout reached after '+info.timeout+'ms')), info.timeout)) : undefined;`,
-      `await Promise.race([stepCall(arg1, info), timeout].filter(p=>p));`,
+      `await Promise.race([call(arg1, info), timeout].filter(p=>p));`,
     ],
     `}`,
   ]

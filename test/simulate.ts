@@ -28,9 +28,13 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
   class MockedRegistry {
     find(step: ParsedStep) {
       callhistory.push({call: 'steps.find', step});
-      return async (pw, info)=>{
-        callhistory.push({call: 'steps.find.call', pw, info});
-      }
+      return {
+        call: async (pw, info)=>{
+          callhistory.push({call: 'steps.find.call', pw, info});
+        },
+        parameters: [],
+        tokens: step.tokens,
+      } satisfies ReturnType<StepRegistry['find']>
     }
     define(name: string, fn) {
       callhistory.push({call: 'steps.define', name, fn});

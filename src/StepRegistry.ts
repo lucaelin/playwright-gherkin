@@ -8,7 +8,13 @@ import { Join, Template } from './utils.js';
 
 export type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
 type DataTableOrUndefined<Table extends string[][] | undefined> = Table extends string[][] ? DataTable<Table> : undefined;
-export type GherkinArgs<Declaration extends StepsDeclaration[number] = StepsDeclaration[number]> = {docString: Declaration['docString'], table: DataTableOrUndefined<Declaration["table"]>, step: Declaration, world: Record<string, any>};
+export type GherkinArgs<Declaration extends StepsDeclaration[number] = StepsDeclaration[number]> = {
+  docString: Declaration['docString'], 
+  table: DataTableOrUndefined<Declaration["table"]>, 
+  step: Declaration, 
+  world: Record<string, any>,
+  parameters: string[],
+};
 export type PlaywrightTestInfo = TestInfo;
 
 export type StepFunction<Declaration extends StepsDeclaration[number] = StepsDeclaration[number]> = 
@@ -33,17 +39,22 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
     this.dialect = dialects[dialect];
   }
 
-  find({type, keyword, tokens, text}: ParsedStep): StepFunction<any> {
+  find({type, keyword, tokens, text}: ParsedStep): {call: StepFunction<any>, tokens: string[], parameters: string[]} {
     const steps = this.steps[type];
     let definedSteps = [...steps.entries()].filter(([definedTokens])=>definedTokens.length === tokens.length);
+    const parameters: string[] = [];
 
     for (const [index, token] of tokens.entries()) {
       definedSteps = definedSteps.filter(([definedTokens])=>{
-        return definedTokens[index] === '{}' || definedTokens[index]===token
+        if (definedTokens[index] === '{}') {
+          parameters.push(token);
+          return true;
+        }
+        return definedTokens[index]===token
       });
     }
 
-    if (definedSteps.length === 1) return definedSteps[0][1];
+    if (definedSteps.length === 1) return {call: definedSteps[0][1], tokens, parameters};
     if (definedSteps.length >= 1) throw new Error(`Found multiple steps for: ${text}`);
     
     throw new Error(`Unable to find step: ${text}`);
