@@ -14,4 +14,12 @@ export type StripFirst<A extends string[] | []> = A extends [string, ...infer Re
 export type Tokenize<T extends string> = Split<T, ' '>;
 export type Template<T extends string> = Replace<Tokenize<T>, '{}', string>;
 
-export type ExtractTemplateValues<T extends string[], A extends T> = T extends [] ? [] : string extends T[0] ? [A[0], ...ExtractTemplateValues<StripFirst<T>, StripFirst<A>>] : ExtractTemplateValues<StripFirst<T>, StripFirst<A>>;
+export type ExtractTemplateValues<T extends string[], A extends string[]> = T extends [] 
+  ? [] 
+  : string[] extends T 
+    ? string[]
+    : string[] extends A 
+      ? string[]
+      : string extends T[0] 
+        ? [A[0], ...ExtractTemplateValues<StripFirst<T>, StripFirst<A>>] 
+        : ExtractTemplateValues<StripFirst<T>, StripFirst<A>>;

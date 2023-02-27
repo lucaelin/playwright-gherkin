@@ -75,6 +75,20 @@ describe('StepRegistry', ()=>{
 
     expect(steps.find(parseStep('Given step one', dialects.en)).call).to.equal(step);
   });
+  it('allows parameterized step type checking', () => {
+    const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one'], text: 'Given step one'}]>();
+    steps.define('Given step {}', async ({parameters})=>{
+      // @ts-expect-error
+      const p: ['invalid'] = parameters;
+    });
+  });
+  it('allows parameterized step without type checking', () => {
+    const steps = new StepRegistry();
+    steps.define('Given step {}', async ({parameters})=>{
+      // @ts-expect-error
+      const p: never = parameters[0];
+    });
+  });
   //it('allows multi step type checking', () => {
   //  const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one']}, {tokens: ['Given', 'step', 'two']}]>();
   //  const step = async () => {};
