@@ -68,7 +68,7 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
   };
 
   define<Step extends string>(
-    statement: Step & (Steps[number]["text"] | ValidStepOrNever<Step, Steps>), 
+    statement: Steps[number]["text"] | ValidStepOrNever<Step, Steps>, 
     step: StepFunction<ValidStepDeclarations<Step, Steps>, Step>
   ) {
     const parsed = parseStep(statement, this.dialect);
