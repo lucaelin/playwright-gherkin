@@ -30,7 +30,7 @@ export function defaultSpec(spec: DeepPartial<Spec>): Spec {
           keyword: 'Then',
           originalKeyword: 'And',
           originalText: 'And step 1',
-          expressionText: '',
+          tokens: ['Then', 'step', '1'],
           type: 'Outcome',
           ...step,
         }))

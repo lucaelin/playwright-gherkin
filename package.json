@@ -27,6 +27,7 @@
     "@types/expect": "^24.3.0",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
+    "@typescript-eslint/parser": "^5.53.0",
     "acorn": "^8.8.2",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",

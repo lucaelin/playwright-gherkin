@@ -55,8 +55,7 @@ export type Step = {
   keyword: string,
   originalKeyword: string,
   originalText: string,
-  expressionText: string,
-  expressions: string[],
+  tokens: string[],
   table?: string[][],
   docString?: string,
 };
@@ -99,17 +98,16 @@ export function parseFeature(uri: string, feature: string): Spec {
             const originalKeyword = astNode?.keyword.trim() ?? '';
             const keyword = stepTypeToDialectKey(step.type ?? 'Unknown', dialect);
             const originalText = `${originalKeyword} ${astNode?.text.trim()}`;
-            const {expressionText, expressions} = parameterize({type: step.type ?? 'Unknown', text: step.text, keyword});
+            const text = keyword + ' ' + step.text;
 
             return {
               location: astNode?.location,
               type: step.type ?? 'Unknown',
-              text: keyword + ' ' + step.text,
+              text,
               keyword,
               originalKeyword,
               originalText,
-              expressionText,
-              expressions,
+              tokens: text.split(' '),
               table: step.argument?.dataTable?.rows.map(row=>row.cells.map(cell=>cell.value)),
               docString: step.argument?.docString?.content,
             } as Step;
@@ -120,27 +118,19 @@ export function parseFeature(uri: string, feature: string): Spec {
   } as Spec; 
 }
 
-export type ParsedStep = { type: StepType, keyword: string, text: string, expressionText?: string, expressions?: string[]};
+export type ParsedStep = { type: StepType, keyword: string, text: string, tokens: string[]};
 export function parseStep(text: string, dialect: Dialect): ParsedStep {
   const andKeyword = dialect.and.find(keyword=>text.startsWith(keyword))?.trim();
-  if (andKeyword) return parameterize({type: 'Conjunction', keyword: andKeyword, text: text.slice(andKeyword.length).trim()});
+  if (andKeyword) return {type: 'Conjunction', keyword: andKeyword, text: text.trim(), tokens: text.trim().split(' ')};
 
   const givenKeyword = dialect.given.find(keyword=>text.startsWith(keyword))?.trim();
-  if (givenKeyword) return parameterize({type: 'Context', keyword: givenKeyword, text: text.slice(givenKeyword.length).trim()});
+  if (givenKeyword) return {type: 'Context', keyword: givenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
 
   const whenKeyword = dialect.when.find(keyword=>text.startsWith(keyword))?.trim();
-  if (whenKeyword) return parameterize({type: 'Action', keyword: whenKeyword, text: text.slice(whenKeyword.length).trim()});
+  if (whenKeyword) return {type: 'Action', keyword: whenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
 
   const thenKeyword = dialect.then.find(keyword=>text.startsWith(keyword))?.trim();
-  if (thenKeyword) return parameterize({type: 'Outcome', keyword: thenKeyword, text: text.slice(thenKeyword.length).trim()});
+  if (thenKeyword) return {type: 'Outcome', keyword: thenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
 
   throw new Error('Unable to parse: '+text);
-}
-
-export function parameterize(step: ParsedStep): Required<ParsedStep> {
-  const matchQuoted = /("([^"]+)"|'([^']+)')/g;
-  const expressions = [...step.text.matchAll(matchQuoted)].map(([,,groupDouble,groupSingle])=>groupDouble??groupSingle);
-
-  const expressionText = expressions.reduce((p,c)=>p.replace(c, '{}'), step.text);
-  return {...step, expressionText, expressions};
 }

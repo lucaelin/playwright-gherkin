@@ -2,25 +2,29 @@ import { PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, Playwr
 import { DataTable } from './DataTable.js';
 
 import {Dialect, dialects} from '@cucumber/gherkin';
-import { PickleStepType } from '@cucumber/messages';
-import { ParsedStep, parseStep } from './parse.js';
+import { ParsedStep, Step, parseStep } from './parse.js';
+import { Join, Template } from './utils.js';
 
 
 export type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
-export type GherkinArgs = {docString: string, table: DataTable, expressions: string[], world: Record<string, any>};
+type DataTableOrUndefined<Table extends string[][] | undefined> = Table extends string[][] ? DataTable<Table> : undefined;
+export type GherkinArgs<Declaration extends StepsDeclaration[number] = StepsDeclaration[number]> = {docString: Declaration['docString'], table: DataTableOrUndefined<Declaration["table"]>, step: Declaration, world: Record<string, any>};
 export type PlaywrightTestInfo = TestInfo;
 
-export type StepFunction = (args: PlaywrightArgs & GherkinArgs, info: PlaywrightTestInfo) => Promise<void>;
+export type StepFunction<Declaration extends StepsDeclaration[number] = StepsDeclaration[number]> = 
+  (args: PlaywrightArgs & GherkinArgs<Declaration>, info: PlaywrightTestInfo) => Promise<void>;
 
+export type StepsDeclaration = Array<Pick<Step, 'tokens'|'text'|'docString'|'table'>>
+type ValidStepOrNever<T extends string, Steps extends StepsDeclaration> = Extract<Steps[number]['tokens'], Template<T>> extends never ? never : T;
+type ValidStepDeclarations<T extends string, Steps extends StepsDeclaration> = Extract<Steps[number], {tokens: Template<T>}>
 
-
-export class StepRegistry<StepList extends string[] = string[]> {
-  private previouslyDefinedType?: string;
+export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
   private steps = {
-    'Context': new Map<string, StepFunction>(), 
-    'Action': new Map<string, StepFunction>(), 
-    'Outcome': new Map<string, StepFunction>(), 
-    'Conjunction': new Map<string, StepFunction>(), 
+    'Context': new Map<string[], StepFunction>(), 
+    'Action': new Map<string[], StepFunction>(), 
+    'Outcome': new Map<string[], StepFunction>(), 
+    'Conjunction': new Map<string[], StepFunction>(), 
+    'Unknown': new Map<string[], StepFunction>(), 
   };
   private dialect: Dialect;
 
@@ -29,20 +33,32 @@ export class StepRegistry<StepList extends string[] = string[]> {
     this.dialect = dialects[dialect];
   }
 
-  find({type, keyword, expressionText, text}: ParsedStep): StepFunction {
+  find({type, keyword, tokens, text}: ParsedStep): StepFunction<any> {
     const steps = this.steps[type];
-    if (steps.has(text)) return steps.get(text)!;
-    if (expressionText && steps.has(expressionText)) return steps.get(expressionText)!;
-    throw new Error(`Unable to find step: ${keyword} ${text}`);
+    let definedSteps = [...steps.entries()].filter(([definedTokens])=>definedTokens.length === tokens.length);
+
+    for (const [index, token] of tokens.entries()) {
+      definedSteps = definedSteps.filter(([definedTokens])=>{
+        return definedTokens[index] === '{}' || definedTokens[index]===token
+      });
+    }
+
+    if (definedSteps.length === 1) return definedSteps[0][1];
+    if (definedSteps.length >= 1) throw new Error(`Found multiple steps for: ${text}`);
+    
+    throw new Error(`Unable to find step: ${text}`);
   };
 
-  define(statement: StepList[number], step: StepFunction) {
-    const {type: rawType, text} = parseStep(statement, this.dialect);
-    const type = rawType === 'Conjunction' ? this.previouslyDefinedType : rawType;
-    this.previouslyDefinedType = type;
-    if (!type) throw new Error('Cannot start a registry with a conjunction');
-    
-    if (this.steps[type].has(text)) throw new Error('Step already exists');
-    this.steps[type].set(text, step);
+  define<Step extends string>(statement: Steps[number]["text"] | ValidStepOrNever<Step, Steps>, step: StepFunction<ValidStepDeclarations<Step, Steps>>) {
+    const parsed = parseStep(statement, this.dialect);
+    if (parsed.type === 'Conjunction') throw new Error('Cannot start a step with a conjunction');
+
+    try {
+      this.find(parsed);
+    } catch {
+      return this.steps[parsed.type].set(parsed.tokens, step as unknown as StepFunction);
+    }
+
+    throw new Error('Step already exists');
   };
 }

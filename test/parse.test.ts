@@ -68,8 +68,7 @@ describe('parse', ()=>{
 
     expect(spec.features[0].scenarios[0].steps[0]).to.deep.equal({
         docString: undefined,
-        expressionText: "a first step",
-        expressions: [],
+        tokens: ['Given', 'a', 'first', 'step'],
         location: {
           column: 11,
           line: 4
@@ -199,8 +198,7 @@ describe('parse', ()=>{
                   keyword: 'Given',
                   originalKeyword: 'Given',
                   originalText: "Given good software",
-                  expressionText: "good software",
-                  expressions: [],
+                  tokens: ['Given', 'good', 'software'],
                   table: undefined,
                   docString: undefined
                 },
@@ -214,8 +212,7 @@ describe('parse', ()=>{
                   keyword: 'When',
                   originalKeyword: 'When',
                   originalText: "When you test it",
-                  expressionText: "you test it",
-                  expressions: [],
+                  tokens: ['When', 'you', 'test', 'it'],
                   table: undefined,
                   docString: undefined
                 },
@@ -229,8 +226,7 @@ describe('parse', ()=>{
                   keyword: 'Then',
                   originalKeyword: 'Then',
                   originalText: "Then it works",
-                  expressionText: "it works",
-                  expressions: [],
+                  tokens: ['Then', 'it', 'works'],
                   table: undefined,
                   docString: undefined
                 }

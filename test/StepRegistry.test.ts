@@ -1,6 +1,6 @@
 import {expect} from 'chai';
-import {StepRegistry} from '../src/StepRegistry.js';
-import { parameterize, parseStep } from '../src/parse.js';
+import {StepRegistry, StepsDeclaration} from '../src/StepRegistry.js';
+import { Step, parseStep } from '../src/parse.js';
 import { dialects } from '@cucumber/gherkin';
 
 describe('StepRegistry', ()=>{
@@ -45,45 +45,53 @@ describe('StepRegistry', ()=>{
 
     expect(steps.find(parseStep('Angenommen es gibt einen Schritt', dialects.de))).to.equal(stepfn);
   });
-  it('chains steps with and', ()=>{
-    const steps = new StepRegistry();
-    const stepfn1 = async () =>{}
-    const stepfn2 = async () =>{}
-
-    steps.define('Given a step', stepfn1)
-    steps.define('And another one', stepfn2);
-
-      expect(steps.find(parseStep('Given a step', dialects.en))).to.equal(stepfn1);
-      expect(steps.find(parseStep('Given another one', dialects.en))).to.equal(stepfn2);
-  });
   it('handels steps with parameters', ()=>{
     const steps = new StepRegistry();
     const stepfn = async () =>{}
 
-    steps.define('Given a "{}"', stepfn)
+    steps.define('Given a {}', stepfn)
     
     expect(steps.find(parseStep('Given a "step"', dialects.en))).to.equal(stepfn);
   });
-  it('prefer steps without parameters', ()=>{
+  it('throws on multiple steps', ()=>{
     const steps = new StepRegistry();
     const stepfn1 = async () =>{}
     const stepfn2 = async () =>{}
 
-    steps.define('Given a "{}"', stepfn1)
-    steps.define('Given a "something"', stepfn2)
-
-    expect(steps.find(parseStep('Given a "something"', dialects.en))).to.equal(stepfn2);
+    steps.define('Given a {}', stepfn1)
+  
+    expect(()=>steps.define('Given a "something"', stepfn2)).to.throw('Step already exists');
   });
   it('allows step type checking', () => {
-    const steps = new StepRegistry<['Given one step', 'Given a second step']>();
+    const steps = new StepRegistry<[{tokens: ['Given', 'one', 'step'], text: 'Given one step'}]>();
     const step = async () => {};
     steps.define('Given one step', step);
 
     // @ts-expect-error
-    steps.define('Given invalid steps', step);
+    steps.define('Given invalid step', step);
 
     expect(steps.find(parseStep('Given one step', dialects.en))).to.equal(step);
   });
+  it('allows parameterized step type checking', () => {
+    const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one'], text: 'Given step one'}]>();
+    const step = async () => {};
+    steps.define('Given step {}', step);
+    
+    // @ts-expect-error
+    steps.define('Given invalid {}', step);
+
+    expect(steps.find(parseStep('Given step one', dialects.en))).to.equal(step);
+  });
+  //it('allows multi step type checking', () => {
+  //  const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one']}, {tokens: ['Given', 'step', 'two']}]>();
+  //  const step = async () => {};
+  //  steps.define('Given step one/two', step);
+  //  
+  //  // @ts-expect-error
+  //  steps.define('Given step three', step);
+  //
+  //  expect(steps.find(parseStep('Given step one', dialects.en))).to.equal(step);
+  //});
 
   it('throws if a step cannot be found', () => {
     const steps = new StepRegistry();
