@@ -14,6 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepublish": "tsc",
     "test": "mocha --loader=ts-node/esm test/**/*.test.ts",
     "test:file": "mocha --loader=ts-node/esm"
   },
