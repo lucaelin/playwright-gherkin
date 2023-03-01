@@ -9,6 +9,9 @@
     "type": "git",
     "url": "https://github.com/lucaelin/playwright-gherkin.git"
   },
+  "bugs": {
+    "url" : "https://github.com/lucaelin/playwright-gherkin/issues"
+  },
   "scripts": {
     "build": "tsc",
     "test": "mocha --loader=ts-node/esm test/**/*.test.ts",
