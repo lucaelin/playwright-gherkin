@@ -1,6 +1,6 @@
 {
   "name": "playwright-gherkin",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Generate Playwright test-runner code from gherkin files!",
   "main": "lib/index.js",
   "type": "module",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepublish": "tsc",
+    "prepublishOnly": "tsc",
     "test": "mocha --loader=ts-node/esm test/**/*.test.ts",
     "test:file": "mocha --loader=ts-node/esm"
   },
