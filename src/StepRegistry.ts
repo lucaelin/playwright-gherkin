@@ -54,10 +54,11 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
     for (const [index, token] of tokens.entries()) {
       definedSteps = definedSteps.filter(([definedTokens])=>{
         if (definedTokens[index] === '{}') {
-          parameters.push(token);
+          const parameterValue = token.startsWith('"') && token.endsWith('"') ? token.slice(1,-1) : token;
+          parameters.push(parameterValue);
           return true;
         }
-        return definedTokens[index]===token
+        return definedTokens[index].split('/').includes(token);
       });
     }
 

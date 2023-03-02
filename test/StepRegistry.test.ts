@@ -51,9 +51,9 @@ describe('StepRegistry', ()=>{
 
     steps.define('Given a {}', stepfn)
 
-    const step = steps.find(parseStep('Given a "step"', dialects.en));
+    const step = steps.find(parseStep('Given a step', dialects.en));
     expect(step.call).to.equal(stepfn);
-    expect(step.parameters).to.deep.equal(['"step"']);
+    expect(step.parameters).to.deep.equal(['step']);
   });
   it('allows step type checking', () => {
     const steps = new StepRegistry<[{tokens: ['Given', 'one', 'step'], text: 'Given one step'}]>();
@@ -80,25 +80,36 @@ describe('StepRegistry', ()=>{
     steps.define('Given step {}', async ({parameters})=>{
       // @ts-expect-error
       const p: ['invalid'] = parameters;
+      const q: ['one'] = parameters;
     });
+  });
+  it('allows sanitizes parameter types', () => {
+    const steps = new StepRegistry<[{tokens: ['Given', 'step', '"one"'], text: 'Given step "one"'}]>();
+    steps.define('Given step {}', async ({parameters})=>{
+      // @ts-expect-error
+      const _expectType1: ['"one"'] = parameters;
+      const _expectType2: ['one'] = parameters;
+    });
+
+    const step = steps.find(parseStep('Given step "one"', dialects.en));
+    expect(step.parameters).to.deep.equal(['one']);
   });
   it('allows parameterized step without type checking', () => {
     const steps = new StepRegistry();
     steps.define('Given step {}', async ({parameters})=>{
       // @ts-expect-error
-      const p: never = parameters[0];
+      const _expectType: never = parameters[0];
     });
   });
-  //it('allows multi step type checking', () => {
-  //  const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one']}, {tokens: ['Given', 'step', 'two']}]>();
-  //  const step = async () => {};
-  //  steps.define('Given step one/two', step);
-  //  
-  //  // @ts-expect-error
-  //  steps.define('Given step three', step);
-  //
-  //  expect(steps.find(parseStep('Given step one', dialects.en))).to.equal(step);
-  //});
+  it('allows template with multiple choices', () => {
+    const steps = new StepRegistry<[{tokens: ['Given', 'one', 'step'], text: 'Given one step'}]>();
+    const stepfn = async () => {};
+    steps.define('Given {} step/steps', stepfn);
+    
+    const step = steps.find(parseStep('Given one step', dialects.en));
+    expect(step.call).to.deep.equal(stepfn);
+    expect(step.parameters).to.deep.equal(['one']);
+  });
 
   it('throws on multiple steps', ()=>{
     const steps = new StepRegistry();
