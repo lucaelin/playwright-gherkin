@@ -111,12 +111,12 @@ describe('StepRegistry', ()=>{
     expect(step.parameters).to.deep.equal(['one']);
   });
   it('allows quoted parameters with spaces', () => {
-    const steps = new StepRegistry<[{tokens: ['Given', 'a', 'step', 'called', 'The First'], text: 'Given a step called "The First"'}]>();
-    steps.define('Given a step called {}', async ({parameters})=>{
+    const steps = new StepRegistry<[{tokens: ['Given', 'The First', 'step'], text: 'Given "The First" step'}]>();
+    steps.define('Given {} step', async ({parameters})=>{
       const _expectType: ['The First'] = parameters;
     });
     
-    const step = steps.find(parseStep('Given a step called "The First"', dialects.en));
+    const step = steps.find(parseStep('Given "The First" step', dialects.en));
     expect(step.parameters).to.deep.equal(['The First']);
   });
 

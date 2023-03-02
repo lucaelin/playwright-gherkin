@@ -119,7 +119,7 @@ export function parseFeature(uri: string, feature: string): Spec {
 }
 
 export function tokenize(text: string): string[] {
-  const [U, _Q1, V, _Q2, ...X] = text.split(/( "|")/g);
+  const [U, _Q1, V, _Q2, ...X] = text.split(/( "|" |"$)/g);
   return [
     ...U.split(' '), 
     ...(V ? [V] : []), 
