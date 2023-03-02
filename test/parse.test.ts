@@ -1,7 +1,48 @@
 import {expect} from 'chai';
-import {parseFeature, Spec, Feature, Scenario} from '../src/parse.js';
+import {parseFeature, parseStep, Spec, Feature, Scenario, } from '../src/parse.js';
+import { dialects } from '@cucumber/gherkin';
 
-describe('parse', ()=>{
+describe('parseStep', ()=>{
+  it('parses a simple step', async ()=>{
+    const step = parseStep('Given a simple step', dialects.en);
+    expect(step.type).to.equal('Context');
+    expect(step.keyword).to.equal('Given');
+    expect(step.text).to.equal('Given a simple step');
+    expect(step.tokens).to.deep.equal(['Given', 'a', 'simple', 'step']);
+  });
+  it('parses a parameterized step', async ()=>{
+    const step = parseStep('Given a {} step', dialects.en);
+    expect(step.tokens).to.deep.equal(['Given', 'a', '{}', 'step']);
+  });
+  it('parses a quoted token', async ()=>{
+    const step = parseStep('Given a "simple" step', dialects.en);
+    expect(step.tokens).to.deep.equal(['Given', 'a', 'simple', 'step']);
+  });
+  it('parses a quoted token with spaces', async ()=>{
+    const step = parseStep('Given a "very simple" step', dialects.en);
+    expect(step.tokens).to.deep.equal(['Given', 'a', 'very simple', 'step']);
+  });
+  it('parses a quoted token with spaces at the end', async ()=>{
+    const step = parseStep('When this step is "very simple"', dialects.en);
+    expect(step.type).to.equal('Action');
+    expect(step.keyword).to.equal('When');
+    expect(step.tokens).to.deep.equal(['When', 'this', 'step', 'is', 'very simple']);
+  });
+  it('parses a mutliple quoted token with spaces', async ()=>{
+    const step = parseStep('When this "step" is "very simple"', dialects.en);
+    expect(step.type).to.equal('Action');
+    expect(step.keyword).to.equal('When');
+    expect(step.tokens).to.deep.equal(['When', 'this', 'step', 'is', 'very simple']);
+  });
+  it('parses steps in different languages', async ()=>{
+    const step = parseStep('Wenn der Schritt sehr gut ist', dialects.de);
+    expect(step.type).to.equal('Action');
+    expect(step.keyword).to.equal('Wenn');
+    expect(step.tokens).to.deep.equal(['Wenn', 'der', 'Schritt', 'sehr', 'gut', 'ist']);
+  });
+});
+
+describe('parseFeature', ()=>{
   it('parses and empty spec', ()=>{
     const spec = parseFeature('happy_path.feature', ``);
 

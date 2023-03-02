@@ -123,7 +123,7 @@ export function tokenize(text: string): string[] {
   return [
     ...U.split(' '), 
     ...(V ? [V] : []), 
-    ...(X.filter(x=>x).length ? tokenize(X.join(' ')) : [])
+    ...(X.filter(x=>x).length ? tokenize(X.join('')) : [])
   ]
 }
 
