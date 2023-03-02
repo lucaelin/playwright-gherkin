@@ -24,12 +24,21 @@ export type UnionifyAll<Str extends string[], D extends string> =
 
 export type StripFirst<A extends string[] | []> = A extends [string, ...infer Rest] ? Rest : [];
 
-export type Tokenize<T extends string> = Split<T, ' '>;
+export type Tokenize<T extends string> = 
+  string extends T
+  ? string[] 
+  : T extends '' 
+    ? [] 
+    : T extends `${infer T} "${infer U}"${infer V}` 
+      ? [...Split<T, ' '>, U, ...Tokenize<V>] 
+      : Split<T, ' '>;
+
 export type Template<T extends string> = Replace<UnionifyAll<Tokenize<T>, '/'>, '{}', string>;
 
 type SanitizeTemplateValue<T extends string> = T extends `"${infer D}"` ? D : T;
 
-export type ExtractTemplateValues<T extends string[], A extends string[]> = T extends [] 
+export type ExtractTemplateValues<T extends string[], A extends string[]> = 
+  T extends [] 
   ? [] 
   : string[] extends T 
     ? string[]

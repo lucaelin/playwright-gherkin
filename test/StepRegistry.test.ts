@@ -84,7 +84,7 @@ describe('StepRegistry', ()=>{
     });
   });
   it('allows sanitizes parameter types', () => {
-    const steps = new StepRegistry<[{tokens: ['Given', 'step', '"one"'], text: 'Given step "one"'}]>();
+    const steps = new StepRegistry<[{tokens: ['Given', 'step', 'one'], text: 'Given step "one"'}]>();
     steps.define('Given step {}', async ({parameters})=>{
       // @ts-expect-error
       const _expectType1: ['"one"'] = parameters;
@@ -109,6 +109,15 @@ describe('StepRegistry', ()=>{
     const step = steps.find(parseStep('Given one step', dialects.en));
     expect(step.call).to.deep.equal(stepfn);
     expect(step.parameters).to.deep.equal(['one']);
+  });
+  it('allows quoted parameters with spaces', () => {
+    const steps = new StepRegistry<[{tokens: ['Given', 'a', 'step', 'called', 'The First'], text: 'Given a step called "The First"'}]>();
+    steps.define('Given a step called {}', async ({parameters})=>{
+      const _expectType: ['The First'] = parameters;
+    });
+    
+    const step = steps.find(parseStep('Given a step called "The First"', dialects.en));
+    expect(step.parameters).to.deep.equal(['The First']);
   });
 
   it('throws on multiple steps', ()=>{

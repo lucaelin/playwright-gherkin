@@ -14,7 +14,7 @@ describe('integration', ()=>{
           When you test it
           Then it works
           | well |
-          And you are happy
+          And you are "very happy"
     `);
 
     const code = generateCode(spec);
@@ -32,8 +32,8 @@ describe('integration', ()=>{
     steps.define('Then it works', async (pw, info)=>{
       stepCalls.push({name: 'Then it works', pw, info});
     });
-    steps.define('Then you are happy', async (pw, info)=>{
-      stepCalls.push({name: 'Then you are happy', pw, info});
+    steps.define('Then you are {}', async (pw, info)=>{
+      stepCalls.push({name: 'Then you are {}', pw, info});
     });
 
     const trace = await simulate(code, {steps, DataTable});
@@ -44,7 +44,8 @@ describe('integration', ()=>{
     expect(stepCalls[1].pw.step.tokens).to.deep.equal(['When', 'you', 'test', 'it']);
     expect(stepCalls[2].name).to.equal('Then it works');
     expect(stepCalls[2].pw.table!.rowMajor).to.deep.equal([['well']]);
-    expect(stepCalls[3].name).to.equal('Then you are happy');
+    expect(stepCalls[3].name).to.equal('Then you are {}');
+    expect(stepCalls[3].pw.parameters).to.deep.equal(['very happy']);
     expect(stepCalls[3].pw.world.value).to.equal(true);
   });
 }) 

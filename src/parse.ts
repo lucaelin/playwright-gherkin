@@ -107,7 +107,7 @@ export function parseFeature(uri: string, feature: string): Spec {
               keyword,
               originalKeyword,
               originalText,
-              tokens: text.split(' '),
+              tokens: tokenize(text),
               table: step.argument?.dataTable?.rows.map(row=>row.cells.map(cell=>cell.value)),
               docString: step.argument?.docString?.content,
             } as Step;
@@ -118,19 +118,28 @@ export function parseFeature(uri: string, feature: string): Spec {
   } as Spec; 
 }
 
+export function tokenize(text: string): string[] {
+  const [U, _Q1, V, _Q2, ...X] = text.split(/( "|")/g);
+  return [
+    ...U.split(' '), 
+    ...(V ? [V] : []), 
+    ...(X.filter(x=>x).length ? tokenize(X.join(' ')) : [])
+  ]
+}
+
 export type ParsedStep = { type: StepType, keyword: string, text: string, tokens: string[]};
 export function parseStep(text: string, dialect: Dialect): ParsedStep {
   const andKeyword = dialect.and.find(keyword=>text.startsWith(keyword))?.trim();
-  if (andKeyword) return {type: 'Conjunction', keyword: andKeyword, text: text.trim(), tokens: text.trim().split(' ')};
+  if (andKeyword) return {type: 'Conjunction', keyword: andKeyword, text: text.trim(), tokens: tokenize(text.trim())};
 
   const givenKeyword = dialect.given.find(keyword=>text.startsWith(keyword))?.trim();
-  if (givenKeyword) return {type: 'Context', keyword: givenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
+  if (givenKeyword) return {type: 'Context', keyword: givenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
 
   const whenKeyword = dialect.when.find(keyword=>text.startsWith(keyword))?.trim();
-  if (whenKeyword) return {type: 'Action', keyword: whenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
+  if (whenKeyword) return {type: 'Action', keyword: whenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
 
   const thenKeyword = dialect.then.find(keyword=>text.startsWith(keyword))?.trim();
-  if (thenKeyword) return {type: 'Outcome', keyword: thenKeyword, text: text.trim(), tokens: text.trim().split(' ')};
+  if (thenKeyword) return {type: 'Outcome', keyword: thenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
 
   throw new Error('Unable to parse: '+text);
 }
