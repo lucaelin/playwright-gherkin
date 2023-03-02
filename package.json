@@ -1,6 +1,6 @@
 {
   "name": "playwright-gherkin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generate Playwright test-runner code from gherkin files!",
   "main": "lib/index.js",
   "type": "module",
