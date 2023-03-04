@@ -26,7 +26,7 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
   MockedTest.describe = MockedDescribe;
   
   class MockedRegistry {
-    find(step: ParsedStep) {
+    find(step: ParsedStep<string>) {
       callhistory.push({call: 'steps.find', step});
       return {
         call: async (pw, info)=>{

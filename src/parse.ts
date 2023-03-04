@@ -1,6 +1,7 @@
 import Gherkin, { Dialect } from '@cucumber/gherkin';
 import {IdGenerator, Pickle, StepKeywordType} from '@cucumber/messages';  
 import {dialects} from '@cucumber/gherkin';
+import { Tokenize } from './utils';
 
 const uuidFn = IdGenerator.uuid();
 const builder = new Gherkin.AstBuilder(uuidFn);
@@ -118,28 +119,28 @@ export function parseFeature(uri: string, feature: string): Spec {
   } as Spec; 
 }
 
-export function tokenize(text: string): string[] {
+export function tokenize<T extends string>(text: T): Tokenize<T> {
   const [U, _Q1, V, _Q2, ...X] = text.split(/( "|" |"$)/g);
   return [
     ...U.split(' '), 
     ...(V ? [V] : []), 
     ...(X.filter(x=>x).length ? tokenize(X.join('')) : [])
-  ]
+  ] as Tokenize<T>;
 }
 
-export type ParsedStep = { type: StepType, keyword: string, text: string, tokens: string[]};
-export function parseStep(text: string, dialect: Dialect): ParsedStep {
+export type ParsedStep<Step extends string> = { type: StepType, keyword: string, text: Step, tokens: Tokenize<Step>};
+export function parseStep<Step extends string>(text: Step, dialect: Dialect): ParsedStep<Step> {
   const andKeyword = dialect.and.find(keyword=>text.startsWith(keyword))?.trim();
-  if (andKeyword) return {type: 'Conjunction', keyword: andKeyword, text: text.trim(), tokens: tokenize(text.trim())};
+  if (andKeyword) return {type: 'Conjunction', keyword: andKeyword, text, tokens: tokenize(text)};
 
   const givenKeyword = dialect.given.find(keyword=>text.startsWith(keyword))?.trim();
-  if (givenKeyword) return {type: 'Context', keyword: givenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
+  if (givenKeyword) return {type: 'Context', keyword: givenKeyword, text, tokens: tokenize(text)};
 
   const whenKeyword = dialect.when.find(keyword=>text.startsWith(keyword))?.trim();
-  if (whenKeyword) return {type: 'Action', keyword: whenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
+  if (whenKeyword) return {type: 'Action', keyword: whenKeyword, text, tokens: tokenize(text)};
 
   const thenKeyword = dialect.then.find(keyword=>text.startsWith(keyword))?.trim();
-  if (thenKeyword) return {type: 'Outcome', keyword: thenKeyword, text: text.trim(), tokens: tokenize(text.trim())};
+  if (thenKeyword) return {type: 'Outcome', keyword: thenKeyword, text, tokens: tokenize(text)};
 
   throw new Error('Unable to parse: '+text);
 }

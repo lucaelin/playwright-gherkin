@@ -1,6 +1,6 @@
-import {expect} from 'chai';
-import {StepRegistry, StepsDeclaration} from '../src/StepRegistry.js';
-import { Step, parseStep } from '../src/parse.js';
+import { expect } from 'chai';
+import { StepRegistry } from '../src/StepRegistry.js';
+import { parseStep } from '../src/parse.js';
 import { dialects } from '@cucumber/gherkin';
 
 describe('StepRegistry', ()=>{

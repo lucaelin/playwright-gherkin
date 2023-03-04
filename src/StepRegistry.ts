@@ -3,7 +3,7 @@ import { DataTable } from './DataTable.js';
 
 import {Dialect, dialects} from '@cucumber/gherkin';
 import { ParsedStep, Step, parseStep } from './parse.js';
-import { ExtractTemplateValues, Join, Template, Tokenize } from './utils.js';
+import { ExtractTemplateValues, Template } from './utils.js';
 
 
 export type PlaywrightArgs = PlaywrightTestArgs & PlaywrightTestOptions & PlaywrightWorkerArgs & PlaywrightWorkerOptions;
@@ -32,13 +32,7 @@ type ValidStepDeclarations<Step extends string, Steps extends StepsDeclaration> 
     : Extract<Steps[number], {tokens: Template<Step>}>
 
 export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
-  private steps = {
-    'Context': new Map<string[], StepFunction>(), 
-    'Action': new Map<string[], StepFunction>(), 
-    'Outcome': new Map<string[], StepFunction>(), 
-    'Conjunction': new Map<string[], StepFunction>(), 
-    'Unknown': new Map<string[], StepFunction>(), 
-  };
+  private steps = new Map<string[], StepFunction>();
   private dialect: Dialect;
 
   constructor(dialect: keyof typeof dialects = process.env.npm_package_config_gherkin_dialect || 'en') {
@@ -46,9 +40,12 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
     this.dialect = dialects[dialect];
   }
 
-  find({type, keyword, tokens, text}: ParsedStep): {call: StepFunction<Steps[number], string>, tokens: string[], parameters: string[]} {
-    const steps = this.steps[type];
-    let definedSteps = [...steps.entries()].filter(([definedTokens])=>definedTokens.length === tokens.length);
+  find<Step extends Steps[number]["text"]>({tokens, text}: ParsedStep<Step>): {
+    call: StepFunction, 
+    tokens: typeof tokens, 
+    parameters: string[]
+  } {
+    let definedSteps = [...this.steps.entries()].filter(([definedTokens])=>definedTokens.length === tokens.length);
     const parameters: string[] = [];
 
     for (const [index, token] of tokens.entries()) {
@@ -62,7 +59,11 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
       });
     }
 
-    if (definedSteps.length === 1) return {call: definedSteps[0][1], tokens, parameters};
+    if (definedSteps.length === 1) return {
+      call: definedSteps[0][1], 
+      tokens, 
+      parameters
+    };
     if (definedSteps.length >= 1) throw new Error(`Found multiple steps for: ${text}`);
     
     throw new Error(`Unable to find step: ${text}`);
@@ -78,7 +79,7 @@ export class StepRegistry<Steps extends StepsDeclaration = StepsDeclaration> {
     try {
       this.find(parsed);
     } catch {
-      return this.steps[parsed.type].set(parsed.tokens, step as unknown as StepFunction);
+      return this.steps.set(parsed.tokens, step as unknown as StepFunction);
     }
 
     throw new Error('Step already exists');
