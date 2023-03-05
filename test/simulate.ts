@@ -13,17 +13,21 @@ export async function simulate(code: string, implementations: {steps?: StepRegis
     callhistory.push({call: 'test.describe', name, fn});
     callhistory.at(-1)!.ret = fn();
   }
-  MockedDescribe.configure = MockedConfigure
-  
+  async function MockedStep(name, fn) {
+    callhistory.push({call: 'test.step', name, fn});
+    return fn();
+  }
   async function MockedTimeout(timeout) {
     callhistory.push({call: 'test.setTimeout', timeout});
   };
-  MockedTest.setTimeout = MockedTimeout;
   async function MockedTest(name, fn) {
     callhistory.push({call: 'test', name, fn});
     callhistory.at(-1)!.ret = fn({}, {timeout: 100});
   }
+  MockedDescribe.configure = MockedConfigure
   MockedTest.describe = MockedDescribe;
+  MockedTest.step = MockedStep;
+  MockedTest.setTimeout = MockedTimeout;
   
   class MockedRegistry {
     find(step: ParsedStep<string>) {

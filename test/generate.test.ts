@@ -26,13 +26,14 @@ describe('generate', ()=>{
     expect(trace[1].name).to.equal('Scenario 1');
     expect(trace[2].call).to.equal('test.setTimeout');
     expect(trace[2].timeout).to.equal(100);
-    expect(trace[3].call).to.equal('steps.find');
-    expect(trace[3].step.text).to.equal('Then step once');
-    expect(trace[3].step.keyword).to.equal('Then');
-    expect(trace[4].call).to.equal('setTimeout');
-    expect(trace[4].timeout).to.equal(100);
-    expect(trace[5].call).to.equal('steps.find.call');
-    expect(trace[5].pw.world).to.deep.equal({});
+    expect(trace[3].call).to.equal('test.step');
+    expect(trace[4].call).to.equal('steps.find');
+    expect(trace[4].step.text).to.equal('Then step once');
+    expect(trace[4].step.keyword).to.equal('Then');
+    expect(trace[5].call).to.equal('setTimeout');
+    expect(trace[5].timeout).to.equal(100);
+    expect(trace[6].call).to.equal('steps.find.call');
+    expect(trace[6].pw.world).to.deep.equal({});
   });
   
   // TODO check this code when https://github.com/microsoft/playwright/issues/21204 is closed or fixed

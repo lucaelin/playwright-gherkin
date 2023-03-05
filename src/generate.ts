@@ -12,7 +12,7 @@ type CodeBlock = (string|LocationMarker|CodeBlock)[]
 function genStep(step: Step): CodeBlock {
   return [
     {line: step.location?.line || 1, step: step.originalText},
-    `{ // ${JSON.stringify(step.originalText)}`,
+    `await test.step(${JSON.stringify(step.originalText)}, async ()=>{`,
     [
       `const table = ${step.table?`new DataTable(${JSON.stringify(step.table)})`:'undefined'};`,
       `const docString = ${JSON.stringify(step.docString)};`,
@@ -22,7 +22,7 @@ function genStep(step: Step): CodeBlock {
       `const timeout = info.timeout ? new Promise((_, rej)=>setTimeout(()=>rej(new Error('Step timeout reached after '+info.timeout+'ms')), info.timeout)) : undefined;`,
       `await Promise.race([call(arg1, info), timeout].filter(p=>p));`,
     ],
-    `}`,
+    `});`,
   ]
 
 }
