@@ -34,7 +34,7 @@ function genScenario(scn: Scenario): CodeBlock {
     `test(${JSON.stringify(`${scn.name} ${scn.tags.join(' ')}`.trim())}, async ({${playwrightArgs.join(', ')}}, info)=>{`,
     [
         `test.setTimeout(${scn.steps.length} * info.timeout);`,
-        `const world = steps.defaultWorld ?? {};`,
+        `const world = JSON.parse(JSON.stringify(steps.defaultWorld ?? {}));`,
         ...tests,
     ],
     `})`,

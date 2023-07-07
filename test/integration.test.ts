@@ -48,4 +48,24 @@ describe('integration', ()=>{
     expect(stepCalls[3].pw.parameters).to.deep.equal(['very happy']);
     expect(stepCalls[3].pw.world.value).to.equal(true);
   });
+
+  it('resets the world between runs', async ()=>{
+    const spec = parseFeature('test.feature', `
+      Feature: Development
+        Scenario: Testing 1
+          When you test it
+        Scenario: Testing 2
+          When you test it
+    `);
+
+    const code = generateCode(spec);
+    const steps = new StepRegistry('en', {value: false});
+
+    steps.define('When you test it', async (pw, info)=>{
+      expect(pw.world.value).to.be.false;
+      pw.world.value = true; 
+    });
+
+    await simulate(code, {steps, DataTable});
+  });
 }) 
