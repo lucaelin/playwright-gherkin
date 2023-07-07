@@ -18,7 +18,7 @@ describe('integration', ()=>{
     `);
 
     const code = generateCode(spec);
-    const steps = new StepRegistry();
+    const steps = new StepRegistry('en', {value: false});
 
     const stepCalls: {name: string, pw: PlaywrightArgs & GherkinArgs, info: PlaywrightTestInfo}[] = [];
 

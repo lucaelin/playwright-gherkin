@@ -144,4 +144,10 @@ describe('StepRegistry', ()=>{
     const step = async () => {};
     expect(() => steps.define('Invalid step', step)).to.throw('Unable to parse: Invalid step');
   });
+  it('accepts default world parameter', () => {
+    const steps = new StepRegistry('en', {test: 'test'});
+    steps.define('Given step {}', async ({world})=>{
+      const _expectType: {test: string} = world;
+    });
+  });
 }) 
