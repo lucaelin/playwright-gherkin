@@ -145,8 +145,9 @@ describe('StepRegistry', ()=>{
     expect(() => steps.define('Invalid step', step)).to.throw('Unable to parse: Invalid step');
   });
   it('accepts default world parameter', () => {
-    const steps = new StepRegistry('en', {test: 'test'});
-    steps.define('Given step {}', async ({world})=>{
+    const defaultWorld = {test: 'test'};
+    const steps = new StepRegistry<[{tokens: ['Given', 'The First', 'step'], text: 'Given "The First" step'}], typeof defaultWorld>('en', defaultWorld);
+    steps.define('Given "The First" step', async ({world})=>{
       const _expectType: {test: string} = world;
     });
   });
