@@ -24,7 +24,7 @@ Feature: My Game
 4. Now you can implement the steps like this: `./my-game/steps.ts`
 
 ```typescript
-import { StepRegistry } from "playwright-gherkin/lib/StepRegistry.js";
+import { StepRegistry } from "playwright-gherkin";
 
 export const steps = new StepRegistry<FeatureSteps[keyof FeatureSteps]>();
 

@@ -1,6 +1,6 @@
 {
   "name": "playwright-gherkin",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Generate Playwright test-runner code from gherkin files!",
   "main": "lib/index.js",
   "type": "module",
@@ -30,10 +30,12 @@
     "library"
   ],
   "dependencies": {
-    "glob": "^10.2.2",
-    "source-map": "^0.7.4",
     "@cucumber/gherkin": "^26.2.0",
-    "@cucumber/messages": "^22.0.0"
+    "@cucumber/messages": "^22.0.0",
+    "@types/glob-watcher": "^5.0.2",
+    "glob": "^10.2.2",
+    "glob-watcher": "^6.0.0",
+    "source-map": "^0.7.4"
   },
   "devDependencies": {
     "@types/acorn": "^6.0.0",
